@@ -18,6 +18,9 @@ namespace MelodyContext
         public virtual DbSet<PlaylistSongMapping> PlaylistSongMappings { get; set; }
         public virtual DbSet<Song> Songs { get; set; }
         public virtual DbSet<UploadLog> UploadLogs { get; set; }
+        public virtual DbSet <Tag> Tags { get; set; }
+        public virtual DbSet<TagSongMapping> TagSongMappings { get; set; }
+        public virtual DbSet<ListenRecord> ListenRecords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,23 +75,23 @@ namespace MelodyContext
 
                 entity.ToTable("Song", "storage");
 
-                //entity.Property(e => e.YouTubeId)
-                //    .HasMaxLength(150)
-                //    .IsUnicode(false);
+                entity.Property(e => e.YouTubeId)
+                    .HasMaxLength(150)
+                    .IsUnicode(false);
 
-                //entity.Property(e => e.Artist)
-                //    .HasMaxLength(255)
-                //    .IsUnicode(false);
+                entity.Property(e => e.Artist)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
 
-                //entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
-                //entity.Property(e => e.IsValid)
-                //    .IsRequired()
-                //    .HasDefaultValueSql("((1))");
+                entity.Property(e => e.IsValid)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
 
-                //entity.Property(e => e.SongName)
-                //    .HasMaxLength(255)
-                //    .IsUnicode(false);
+                entity.Property(e => e.SongName)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<UploadLog>(entity =>
@@ -103,6 +106,25 @@ namespace MelodyContext
 
                 entity.Property(e => e.TimeOfError).HasColumnType("datetime");
             });
+
+            modelBuilder.Entity<Tag>(entity =>
+            {
+                entity.HasKey(e => e.TagId);
+                entity.ToTable("Tag", "app");
+            });
+
+            modelBuilder.Entity<TagSongMapping>(entity =>
+            {
+                entity.HasKey(e => e.MappingId);
+                entity.ToTable("TagSongMapping", "app");
+            });
+
+            modelBuilder.Entity<ListenRecord>(entity =>
+            {
+                entity.HasKey(e => e.RecordId);
+                entity.ToTable("ListenRecord", "app");
+            });
+
             OnModelCreatingPartial(modelBuilder);
         }
 

@@ -75,5 +75,9 @@
     <Build Include="Types\User-defined Data Types\storage.MappingTableType.sql" />
     <Build Include="Types\User-defined Data Types\storage.PlaylistTableType.sql" />
     <Build Include="Types\User-defined Data Types\storage.SongTableType.sql" />
+    <Build Include="Security\Schemas\app.sql" />
+    <Build Include="Tabels\app.Tag.sql" />
+    <Build Include="Tabels\app.TagSongMapping.sql" />
+    <Build Include="Tabels\app.ListenRecord.sql" />
   </ItemGroup>
 </Project>
