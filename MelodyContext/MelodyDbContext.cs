@@ -19,20 +19,6 @@ namespace MelodyContext
         public virtual DbSet<Song> Songs { get; set; }
         public virtual DbSet<UploadLog> UploadLogs { get; set; }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionString"));
-        //}
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-
-        //        optionsBuilder.UseSqlServer("Server=tcp:lemasterworks.database.windows.net,1433;Initial Catalog=MelodyDb;Persist Security Info=False;User ID=tlemaster;Password=Lexielm2;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
-        //    }
-        //}
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
