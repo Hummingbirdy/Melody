@@ -15,6 +15,5 @@ namespace MelodyContext.Models
         public bool IsValid { get; set; }
         public bool InAzure { get; set; }
         public bool UploadFailed { get; set; }
-        [NoTMapped]
     }
 }
