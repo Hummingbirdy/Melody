@@ -1,0 +1,17 @@
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\bin\Release\net6.0\Repositories.deps.json
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\bin\Release\net6.0\Repositories.runtimeconfig.json
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\bin\Release\net6.0\Repositories.dll
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\bin\Release\net6.0\Repositories.pdb
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\bin\Release\net6.0\MelodyContext.dll
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\bin\Release\net6.0\MelodyContext.pdb
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.csproj.AssemblyReference.cache
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.AssemblyInfoInputs.cache
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.AssemblyInfo.cs
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.csproj.CoreCompileInputs.cache
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.csproj.CopyComplete
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.dll
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\refint\Repositories.dll
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.pdb
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\Repositories.genruntimeconfig.cache
+C:\Users\tlema\source\repos\Melody\Melody\Repositories\obj\Release\net6.0\ref\Repositories.dll

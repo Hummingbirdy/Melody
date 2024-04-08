@@ -1,0 +1,6 @@
+C:\Users\tlema\source\repos\Melody\Melody\MelodyDb\bin\Debug\MelodyDb.dacpac
+C:\Users\tlema\source\repos\Melody\Melody\MelodyDb\bin\Debug\MelodyDb.dll
+C:\Users\tlema\source\repos\Melody\Melody\MelodyDb\bin\Debug\MelodyDb.pdb
+C:\Users\tlema\source\repos\Melody\Melody\MelodyDb\obj\Debug\MelodyDb.sqlproj.AssemblyReference.cache
+C:\Users\tlema\source\repos\Melody\Melody\MelodyDb\obj\Debug\MelodyDb.dll
+C:\Users\tlema\source\repos\Melody\Melody\MelodyDb\obj\Debug\MelodyDb.pdb
