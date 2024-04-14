@@ -29,6 +29,7 @@ namespace YouTubeAPI
                     {
                         YouTubeId = s.ContentDetails.VideoId,
                         SongName = s.Snippet.Title,
+                        YouTubeAddedDate = s.Snippet.PublishedAt
                     };
                     songList.Add(item);
                 });

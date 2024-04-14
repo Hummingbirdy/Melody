@@ -42,13 +42,14 @@ namespace Repositories
         {
             try
             {
-                string[] columns = { "YouTubeId", "SongName", "Artist" };
+                string[] columns = { "YouTubeId", "SongName", "Artist", "YouTubeAddedDate" };
                 songs = songs.GroupBy(s => new { s.YouTubeId }).Select(s => s.FirstOrDefault()).ToList();
                 string[] songIds = songs.Select(s => s.YouTubeId).ToArray();
                 string[] songNames = songs.Select(s => s.SongName).ToArray();
+                string[] dates = songs.Select(s => s.YouTubeAddedDate.ToString()).ToArray();
                 // string[] songNames = new string[songIds.Length];
                 string[] artists = new string[songIds.Length];
-                string[][] data = new string[][] { songIds, songNames, artists };
+                string[][] data = new string[][] { songIds, songNames, artists, dates };
                 var dataTable = CreateDataTable(columns, data);
 
                 var status = await ExecuteSPAsync("storage.SongInsert", "@song", "storage.SongTableType", dataTable);
