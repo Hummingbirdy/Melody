@@ -3,7 +3,6 @@ import { Text, View } from '@/components/Themed';
 import { useEffect, useState } from 'react';
 import { Audio } from "expo-av"
 import { FontAwesome } from '@expo/vector-icons';
-import { Sound } from 'expo-av/build/Audio';
 
 type Song = {
   youTubeId: string,
@@ -42,19 +41,19 @@ export default function TabOneScreen() {
     Audio.setAudioModeAsync({
       staysActiveInBackground: true,
       shouldDuckAndroid: true           
-    })
+    });
   }, []);
 
-  async function PlaySong(change: number): Promise<void> {
-    console.log('playing at location' + index + ' + ' + change)
-    if(soundLoaded){
+
+  async function PlayAtLocation(newIndex: number, isSoundLoaded: boolean): Promise<void> {
+    console.log('playing at location: ' + newIndex)
+    if(isSoundLoaded){
       await sound.unloadAsync();
       console.log('unloaded sound')
     }
-    let nextSong = index + change;
-    setIndex(nextSong);
-    console.log('loading song' + data[nextSong].songName);
-    let Uri = 'https://melodymusic.blob.core.windows.net/mp4storage/' + data[nextSong].youTubeId + '.mp3'
+    setIndex(newIndex);
+    console.log('loading song' + data[newIndex].songName);
+    let Uri = 'https://melodymusic.blob.core.windows.net/mp4storage/' + data[newIndex].youTubeId + '.mp3'
     await sound.loadAsync({
       uri: Uri
     });
@@ -62,20 +61,20 @@ export default function TabOneScreen() {
     sound.setOnPlaybackStatusUpdate(trackStatus);
     await sound.playAsync();
     setPlaying(true)
-    console.log('play')
+    console.log('play');
   }
 
-  async function PlayAtLocation(youTubeId: string): Promise<void> {
+  async function PlayById(youTubeId: string): Promise<void> {
     console.log('playing selected song');
     if(soundLoaded){
       await sound.unloadAsync();
     }
-    let nextSong = data.findIndex(function(song) {
+    let newIndex = data.findIndex(function(song) {
       return song.youTubeId == youTubeId
     });
-    setIndex(nextSong);
-    console.log('loading song' + data[nextSong].songName);
-    let Uri = 'https://melodymusic.blob.core.windows.net/mp4storage/' + data[nextSong].youTubeId + '.mp3'
+    setIndex(newIndex);
+    console.log('loading song' + data[newIndex].songName);
+    let Uri = 'https://melodymusic.blob.core.windows.net/mp4storage/' + data[newIndex].youTubeId + '.mp3'
     await sound.loadAsync({
       uri: Uri
     });
@@ -93,7 +92,7 @@ export default function TabOneScreen() {
 
   async function trackStatus(playbackStatus: any): Promise<void> {
     if(playbackStatus.didJustFinish){
-      PlaySong(1)
+      PlayAtLocation(index + 1, true);
     }
   }
 
@@ -112,7 +111,7 @@ export default function TabOneScreen() {
               keyExtractor={({ youTubeId }) => youTubeId}
               renderItem={({ item }) => (
                 <View style={item.youTubeId == data[index].youTubeId ? styles.playingSongBubble : styles.songBubble}>
-                  <TouchableOpacity onPress={() => PlayAtLocation(item.youTubeId)}>
+                  <TouchableOpacity onPress={() => PlayById(item.youTubeId)}>
                   <Text style={styles.songTitle}>
                     {item.songName}
                   </Text>
@@ -125,17 +124,17 @@ export default function TabOneScreen() {
       )}
       <View style={styles.controls}>
 
-        <FontAwesome.Button style={styles.directionButton} name="backward" backgroundColor="purple" onPress={() => PlaySong(-1)}></FontAwesome.Button>
+        <FontAwesome.Button style={styles.directionButton} name="backward" backgroundColor="purple" onPress={() => PlayAtLocation(index - 1, soundLoaded)}></FontAwesome.Button>
       {
         playing ? (
           <FontAwesome.Button style={styles.playButton} name="pause" backgroundColor="purple" onPress={() => Pause()}></FontAwesome.Button>
         ) : (
-          <FontAwesome.Button style={styles.playButton} name="play" backgroundColor="purple" onPress={() => PlaySong(0)}></FontAwesome.Button>
+          <FontAwesome.Button style={styles.playButton} name="play" backgroundColor="purple" onPress={() => PlayAtLocation(index, soundLoaded)}></FontAwesome.Button>
         )
       }
 
 
-        <FontAwesome.Button style={styles.directionButton} name="forward" backgroundColor="purple" onPress={() => PlaySong(1)}></FontAwesome.Button>
+        <FontAwesome.Button style={styles.directionButton} name="forward" backgroundColor="purple" onPress={() => PlayAtLocation(index + 1, soundLoaded)}></FontAwesome.Button>
 
       </View>
     </View>
