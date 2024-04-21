@@ -1,8 +1,8 @@
 import { ActivityIndicator, FlatList, StyleSheet, Button, TouchableOpacity } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useEffect, useState } from 'react';
-import { Audio } from "expo-av"
 import { FontAwesome } from '@expo/vector-icons';
+import TrackPlayer, { AppKilledPlaybackBehavior, Capability } from 'react-native-track-player';
 
 type Song = {
   youTubeId: string,
@@ -14,20 +14,42 @@ type Song = {
   uploadFailed: boolean
 }
 
+type Track = {
+  url: string,
+  title: string,
+  artist: string,
+  album: string,
+  genre: string,
+  date: string,
+  artwork: string,
+  duration: number
+}
 
 export default function TabOneScreen() {
   const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState<Song[]>([]);
-  const [index, setIndex] = useState(0);
-  const [sound, setSound] = useState(new Audio.Sound());
-  const [soundLoaded, setSoundLoaded] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [trackIndex, setIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const getSongs = async () => {
     try {
       const response = await fetch('https://melodyapi.azurewebsites.net/api/song');
-      const songJson = await response.json();
-      setData(songJson);
+      let songJson: Song[] = await response.json();
+      let trackList = new Array<Track>();
+      songJson.forEach(song => {
+        trackList.push({
+          url: 'https://melodymusic.blob.core.windows.net/mp4storage/' + song.youTubeId + '.mp3',
+          title: song.songName,
+          artist: song.artist,
+          album: "",
+          genre: "",
+          date: "",
+          artwork: require('../../assets/images/favicon.png'),
+          duration: 10
+        });
+      });
+      setTracks(trackList);
+      await TrackPlayer.add(trackList);
     } catch (error) {
       console.error(error);
     } finally {
@@ -36,64 +58,68 @@ export default function TabOneScreen() {
 
   }
 
-  useEffect(() => {
-    getSongs();
-    Audio.setAudioModeAsync({
-      staysActiveInBackground: true,
-      shouldDuckAndroid: true           
+  const setup = async () => {
+    await TrackPlayer.setupPlayer();
+    TrackPlayer.updateOptions({
+      android: {
+          // This is the default behavior
+          appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback
+      },
+      // Media controls capabilities
+      capabilities: [
+        Capability.Play,
+        Capability.Pause,
+        Capability.SkipToNext,
+        Capability.SkipToPrevious,
+        Capability.Stop,
+      ],
+
+      // Capabilities that will show up when the notification is in the compact form on Android
+      compactCapabilities: [Capability.Play, Capability.Pause, Capability.SkipToNext, Capability.SkipToPrevious],
     });
+  }
+
+  useEffect(() => {
+    setup();
+    getSongs(); 
   }, []);
 
-
-  async function PlayAtLocation(newIndex: number, isSoundLoaded: boolean): Promise<void> {
-    console.log('playing at location: ' + newIndex)
-    if(isSoundLoaded){
-      await sound.unloadAsync();
-      console.log('unloaded sound')
-    }
-    setIndex(newIndex);
-    console.log('loading song' + data[newIndex].songName);
-    let Uri = 'https://melodymusic.blob.core.windows.net/mp4storage/' + data[newIndex].youTubeId + '.mp3'
-    await sound.loadAsync({
-      uri: Uri
-    });
-    setSoundLoaded(true);
-    sound.setOnPlaybackStatusUpdate(trackStatus);
-    await sound.playAsync();
-    setPlaying(true)
-    console.log('play');
+  const Play = async () => {
+    TrackPlayer.play();
+    setIsPlaying(true);
+    let trackIndex = await TrackPlayer.getActiveTrackIndex();
+    if(trackIndex != undefined){
+      setIndex(trackIndex);
+    }  
   }
 
-  async function PlayById(youTubeId: string): Promise<void> {
-    console.log('playing selected song');
-    if(soundLoaded){
-      await sound.unloadAsync();
-    }
-    let newIndex = data.findIndex(function(song) {
-      return song.youTubeId == youTubeId
-    });
-    setIndex(newIndex);
-    console.log('loading song' + data[newIndex].songName);
-    let Uri = 'https://melodymusic.blob.core.windows.net/mp4storage/' + data[newIndex].youTubeId + '.mp3'
-    await sound.loadAsync({
-      uri: Uri
-    });
-    setSoundLoaded(true);
-    sound.setOnPlaybackStatusUpdate(trackStatus);
-    await sound.playAsync();
-    setPlaying(true);
-    console.log('play')
+  const Pause = async() => {
+    TrackPlayer.pause();
+    setIsPlaying(false);
   }
 
-  async function Pause() : Promise<void>{
-    await sound.pauseAsync();
-    setPlaying(false);
+  const PlayNext = async () => {
+    await TrackPlayer.skipToNext();
+    let trackIndex = await TrackPlayer.getActiveTrackIndex();
+    if(trackIndex != undefined){
+      setIndex(trackIndex);
+    }     
   }
 
-  async function trackStatus(playbackStatus: any): Promise<void> {
-    if(playbackStatus.didJustFinish){
-      PlayAtLocation(index + 1, true);
-    }
+  const PlayPrevious = async () => {
+    await TrackPlayer.skipToPrevious();
+    let trackIndex = await TrackPlayer.getActiveTrackIndex();
+    if(trackIndex != undefined){
+      setIndex(trackIndex);
+    }  
+  }
+
+  const PlayAtIndex = async (index: number) => {
+    await TrackPlayer.skip(index);
+    let trackIndex = await TrackPlayer.getActiveTrackIndex();
+    if(trackIndex != undefined){
+      setIndex(trackIndex);
+    }  
   }
 
   return (
@@ -103,39 +129,35 @@ export default function TabOneScreen() {
       ) : (
         <View style={{flex: 10}}>
           <View style={{ flex: 3, justifyContent: 'center', alignContent: 'center' }}>
-            <Text style={styles.title}>{data[index].songName}</Text>
+            <Text style={styles.title}>{tracks[trackIndex].title}</Text>
           </View>
           <View style={{ flex: 2, padding: 24 }}>
             <FlatList
-              data={data}
-              keyExtractor={({ youTubeId }) => youTubeId}
-              renderItem={({ item }) => (
-                <View style={item.youTubeId == data[index].youTubeId ? styles.playingSongBubble : styles.songBubble}>
-                  <TouchableOpacity onPress={() => PlayById(item.youTubeId)}>
-                  <Text style={styles.songTitle}>
-                    {item.songName}
-                  </Text>
-                  </TouchableOpacity>
-                </View>
+              data={tracks}
+              keyExtractor={({ url }) => url}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity onPress={() => PlayAtIndex(index)}>              
+                  <View style={index == trackIndex ? styles.playingSongBubble : styles.songBubble}>
+                    <Text style={styles.songTitle}>
+                      {item.title}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
               )}
             />
           </View>
         </View>
       )}
       <View style={styles.controls}>
-
-        <FontAwesome.Button style={styles.directionButton} name="backward" backgroundColor="purple" onPress={() => PlayAtLocation(index - 1, soundLoaded)}></FontAwesome.Button>
-      {
-        playing ? (
-          <FontAwesome.Button style={styles.playButton} name="pause" backgroundColor="purple" onPress={() => Pause()}></FontAwesome.Button>
-        ) : (
-          <FontAwesome.Button style={styles.playButton} name="play" backgroundColor="purple" onPress={() => PlayAtLocation(index, soundLoaded)}></FontAwesome.Button>
-        )
-      }
-
-
-        <FontAwesome.Button style={styles.directionButton} name="forward" backgroundColor="purple" onPress={() => PlayAtLocation(index + 1, soundLoaded)}></FontAwesome.Button>
-
+        <FontAwesome.Button style={styles.directionButton} name="backward" backgroundColor="purple" onPress={() => PlayPrevious()}></FontAwesome.Button>
+        {
+          isPlaying ? (
+            <FontAwesome.Button style={styles.playButton} name="pause" backgroundColor="purple" onPress={() => Pause()}></FontAwesome.Button>
+          ) : (
+            <FontAwesome.Button style={styles.playButton} name="play" backgroundColor="purple" onPress={() => Play()}></FontAwesome.Button>
+          )
+        }         
+        <FontAwesome.Button style={styles.directionButton} name="forward" backgroundColor="purple" onPress={() => PlayNext()}></FontAwesome.Button>
       </View>
     </View>
   );
