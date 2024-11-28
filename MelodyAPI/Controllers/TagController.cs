@@ -31,10 +31,11 @@ namespace MelodyAPI.Controllers
 
         // POST api/<TagController>
         [HttpPost]
-        public void Create([FromBody] Tag tag)
+        public Tag Create([FromBody] Tag tag)
         {
             _context.Add(tag);
             _context.SaveChanges();
+            return _context.Tags.Where(t => t.TagName == tag.TagName).FirstOrDefault();
         }
 
         // PUT api/<TagController>/5

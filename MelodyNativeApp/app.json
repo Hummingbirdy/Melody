@@ -4,7 +4,7 @@
     "slug": "MelodyNativeApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/favicon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/favicon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.tlemaster.MelodyNativeApp"
@@ -40,9 +40,9 @@
       "router": {
         "origin": false
       },
-      "eas": {
-        "projectId": "afcda250-f631-4631-8141-ad9f6f380e11"
-      }
+     "eas": {
+       "projectId": "afcda250-f631-4631-8141-ad9f6f380e11"
+     }
     }
   }
 }

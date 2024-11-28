@@ -22,9 +22,22 @@ namespace MelodyAPI.Controllers
         }
         // GET: api/<SongController>
         [HttpGet]
-        public List<Song> Get(string? orderBy = "recent", string? term = null, string? playlistId = null, int? tagIg = null)
+        public List<Song> Get(string? orderBy = "recent", string? tags = null, string? term = null, string? playlistId = null)
         {
             var songs = _context.Songs.Where(s => s.IsValid == true && s.InAzure == true).ToList();
+            var mappingsList = _context.TagSongMappings.ToList();
+            // var tags = _context.Tags.ToList();
+            songs.ForEach(song =>
+            {
+                song.Tags = mappingsList.Where(m => m.SongId == song.YouTubeId).Select(m => m.TagId).ToArray();
+            });
+
+            if (tags != null)
+            {
+                int[] tagArray = tags.Split(',').Select(t => Convert.ToInt32(t)).ToArray();
+                songs = songs.Where(s => (s.Tags != null) && (s.Tags.Intersect(tagArray).Any())).ToList();
+            }
+
             if (term != null)
             {
                 songs = songs.Where(s => s.SongName.Contains(term)).ToList();
@@ -43,6 +56,28 @@ namespace MelodyAPI.Controllers
             {
                 songs = songs.OrderByDescending(s => s.YouTubeAddedDate).ToList();
             }
+
+            //  songs = songs.Where(s => s.Tags == null || s.Tags.Length == 0).ToList();
+            return songs;
+        }
+
+        // GET: api/<SongController>
+        [HttpGet]
+        [Route("GetUnsorted")]
+        public List<Song> GetUnsorted()
+        {
+            var songs = _context.Songs.Where(s => s.IsValid == true && s.InAzure == true).ToList();
+            var mappingsList = _context.TagSongMappings.ToList();
+            // var tags = _context.Tags.ToList();
+            songs.ForEach(song =>
+            {
+                song.Tags = mappingsList.Where(m => m.SongId == song.YouTubeId).Select(m => m.TagId).ToArray();
+            });
+
+            songs = songs.OrderByDescending(s => s.YouTubeAddedDate).ToList();
+
+
+            songs = songs.Where(s => s.Tags == null || s.Tags.Length == 0).ToList();
             return songs;
         }
 
@@ -50,7 +85,10 @@ namespace MelodyAPI.Controllers
         [HttpGet("{id}")]
         public Song Get(string id)
         {
-            return _context.Songs.FirstOrDefault(s => s.YouTubeId == id);
+            var mappingsList = _context.TagSongMappings.ToList();
+            var song = _context.Songs.FirstOrDefault(s => s.YouTubeId == id);
+            song.Tags = mappingsList.Where(m => m.SongId == song.YouTubeId).Select(m => m.TagId).ToArray();
+            return song;
         }
 
         // POST api/<SongController>

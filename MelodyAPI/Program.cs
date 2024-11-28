@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var _connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//var _connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var _connectionString = "Server=tcp:lemasterworks.database.windows.net,1433;Initial Catalog=MelodyDb;Persist Security Info=False;User ID=tlemaster;Password=Lexielm2;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 
 // Add services to the container.
 builder.Services.AddDbContext<MelodyDbContext>(options =>

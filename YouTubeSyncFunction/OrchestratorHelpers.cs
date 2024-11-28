@@ -8,8 +8,11 @@ using Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using YouTubeAPI.Interfaces;
+using YoutubeDLSharp;
+using YoutubeDLSharp.Options;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 
@@ -30,12 +33,13 @@ namespace YouTubeSyncFunction
         internal readonly ILogRepository _logRepo;
 
         public OrchestratorHelpers(ISync sync, ISongRepository songRepository, IPlaylistRepository playlistRepository,
-                                    IPlaylistSongMappingRepository playlistSongMappingRepository)
+                                    IPlaylistSongMappingRepository playlistSongMappingRepository, ILogRepository logRepository)
         {
             _sync = sync;
             _songRepository = songRepository;
             _playlistRepository = playlistRepository;
             _playlistSongMappingRepository = playlistSongMappingRepository;
+            _logRepo = logRepository;
         }
 
         public async Task<string> SyncYouTube(ILogger log)
@@ -89,14 +93,16 @@ namespace YouTubeSyncFunction
 
                     try
                     {
+
+                        
                         var youtube = new YoutubeClient();
-                        // var video = await youtube.Videos.GetAsync(s.YouTubeId);
+                        var video = await youtube.Videos.GetAsync(s.YouTubeId);
 
                         var streamManifest = await youtube.Videos.Streams.GetManifestAsync(s.YouTubeId);
                         var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
                         var stream = await youtube.Videos.Streams.GetAsync(streamInfo);
 
-                       // log.LogInformation($"uploading video:");
+                        log.LogInformation($"uploading video: {s.SongName}");
                         var connectionString = Environment.GetEnvironmentVariable("BlobKey");
                         string containerName = "mp4storage";
                         var serviceClient = new BlobServiceClient(connectionString);
@@ -104,7 +110,9 @@ namespace YouTubeSyncFunction
                         var blobClient = containerClient.GetBlobClient($"{s.YouTubeId}.mp3");
 
                         blobClient.Upload(stream);
-                        log.LogInformation("upload finished: ");
+                        _songRepository.UpdateAzureFlag(s.YouTubeId);
+                        log.LogInformation($"upload finished: {s.SongName}");
+                        Thread.Sleep(180_000);
 
                     }
                     catch (Exception ex)
@@ -113,6 +121,7 @@ namespace YouTubeSyncFunction
                         if (ex.Message.Contains("The specified blob already exists."))
                         {
                             _songRepository.UpdateAzureFlag(s.YouTubeId);
+                            
                         }
                         else
                         {
@@ -121,6 +130,7 @@ namespace YouTubeSyncFunction
                             _logRepo.AddError(ex.Message);
 
                         }
+                        Thread.Sleep(180_000);
 
                     }
 

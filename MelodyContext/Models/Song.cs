@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,5 +17,7 @@ namespace MelodyContext.Models
         public bool IsValid { get; set; }
         public bool InAzure { get; set; }
         public bool UploadFailed { get; set; }
+        [NotMapped]
+        public int[]? Tags { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace YouTubeAPI
         public async Task<List<Song>> SongsInPlaylist(string playlistId)
         {
             var service = YouTubeService();
-            var results = service.PlaylistItems.List("contentDetails, snippet");
+            var results = service.PlaylistItems.List("contentDetails, id, snippet, status");
             results.PlaylistId = playlistId;
             List<Song> songList = new();
             var nextPageToken = "";
@@ -29,7 +29,8 @@ namespace YouTubeAPI
                     {
                         YouTubeId = s.ContentDetails.VideoId,
                         SongName = s.Snippet.Title,
-                        YouTubeAddedDate = s.Snippet.PublishedAt
+                        YouTubeAddedDate = s.Snippet.PublishedAt,
+                        Artist = s.Snippet.VideoOwnerChannelTitle?.Replace(" - Topic", "") ?? string.Empty
                     };
                     songList.Add(item);
                 });

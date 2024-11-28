@@ -31,10 +31,18 @@ namespace MelodyAPI.Controllers
 
         // POST api/<TagSongMappingController>
         [HttpPost]
-        public void Create([FromBody] Tag tag)
+        public void Create([FromBody] TagMappingRequest mapping)
         {
-            _context.Add(tag);
+            TagSongMapping newMapping = new()
+            {
+                SongId = mapping.SongId,
+                TagId = mapping.TagId,
+                CreatedDate = DateTime.Now
+            };
+
+            _context.Add(newMapping);
             _context.SaveChanges();
+           // return _context.TagSongMappings.Where(m => m.SongId == mapping.SongId && m.TagId == mapping.TagId).FirstOrDefault();
         }
 
         // PUT api/<TagSongMappingController>/5
@@ -51,5 +59,10 @@ namespace MelodyAPI.Controllers
             _context.Remove(contextTag);
             _context.SaveChanges();
         }
+    }
+    public class TagMappingRequest
+    {
+        public int TagId { get; set; }
+        public string SongId { get; set;}
     }
 }

@@ -117,6 +117,8 @@ namespace MelodyContext
             {
                 entity.HasKey(e => e.MappingId);
                 entity.ToTable("TagSongMapping", "app");
+
+                entity.HasIndex(e => new { e.SongId, e.TagId }, "UQ_TagSongMapping__TagId_SongId");
             });
 
             modelBuilder.Entity<ListenRecord>(entity =>

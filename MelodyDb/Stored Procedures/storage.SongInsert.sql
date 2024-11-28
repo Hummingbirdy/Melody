@@ -26,7 +26,7 @@ as
 
 	--when matched then
 	--	update set
-	--		tgt.YouTubeAddedDate = src.YouTubeAddedDate
+	--		tgt.Artist = src.Artist
 	--when not matched by target then
 	--	insert (
 	--		YouTubeId,

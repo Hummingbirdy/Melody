@@ -12,9 +12,9 @@ namespace Repositories
     public class LogRepository : BaseDB, ILogRepository
     {
         private readonly MelodyDbContext _context;
-        public LogRepository()
+        public LogRepository(MelodyDbContext context)
         {
-            _context = new MelodyDbContext();
+            _context = context;
         }
         public void AddError(string message)
         {
