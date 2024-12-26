@@ -1,4 +1,5 @@
-#binarys
-*.dtbcache.v2
-.vs/Melody/FileContentIndex/
-Repositories/obj/Release/net6.0/
+
+*.ddl
+*.pdb
+*.vsidx
+*.cache

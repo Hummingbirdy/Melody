@@ -43,6 +43,9 @@
      "eas": {
        "projectId": "afcda250-f631-4631-8141-ad9f6f380e11"
      }
+    },
+    "androidStatusBar": {
+      "translucent": true
     }
   }
 }

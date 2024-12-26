@@ -10,8 +10,7 @@ namespace MelodyContext.Models
     {
         public int RecordId { get; set; }
         public string SongId { get; set; }
-        public DateTime StartTime { get; set; }
-        public int ListenLength { get; set; }
+        public DateTime ListenTime { get; set; }
         public virtual Song Song { get; set; }
     }
 }

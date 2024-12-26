@@ -91,6 +91,19 @@ namespace MelodyAPI.Controllers
             return song;
         }
 
+        [Route("MarkSongListen")]
+        [HttpPost]
+        public void MarkSongListen(string id)
+        {
+            var record = new ListenRecord()
+            {
+                SongId = id,
+                ListenTime = DateTime.Now
+            };
+            _context.ListenRecords.Add(record);
+            _context.SaveChanges();
+        }
+
         // POST api/<SongController>
         [HttpPost]
         public void Post([FromBody] string value)

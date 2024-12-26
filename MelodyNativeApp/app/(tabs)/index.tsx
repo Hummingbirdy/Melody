@@ -3,14 +3,16 @@ import { Text, View } from '@/components/Themed';
 import { useEffect, useState } from 'react';
 import { FontAwesome } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
-import TrackPlayer, { AppKilledPlaybackBehavior, Capability } from 'react-native-track-player';
+import TrackPlayer, { AppKilledPlaybackBehavior, Capability, useTrackPlayerEvents, Event } from 'react-native-track-player';
 import { SearchBar } from '@rneui/themed';
 import { Link } from 'expo-router';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { MultiSelect } from 'react-native-element-dropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { random } from 'lodash';
+import SongCarousel from '@/components/SongCarousel';
+import PlayerControls from '@/components/PlayerControls';
+import SongSearch from '@/components/SongSearch';
+import PlayerTitle from '@/components/PlayerTitle';
 
 type Song = {
   youTubeId: string,
@@ -52,6 +54,11 @@ const OrderBy = {
   added: "added"
 }
 
+const events = [
+  Event.PlaybackState,
+  Event.PlaybackError,
+];
+
 
 export default function TabOneScreen() {
   const [isLoading, setLoading] = useState(true);
@@ -64,8 +71,27 @@ export default function TabOneScreen() {
   const colorScheme = useColorScheme();
   const [orderBy, setOrderBy] = useState(OrderBy.recent);
   const [showingUntagged, setShowingUntagged] = useState(false);
-  const [trackCount, setTrackCount] = useState(0);
 
+
+  // useTrackPlayerEvents(events, (event) => {
+  //   console.log("here");
+  //   console.log(event.type)
+  //   if(event.type == Event.PlaybackActiveTrackChanged){
+  //     console.log(event.type);
+  //     var startIndex = event.index ?? 0;
+  //     const interval = setInterval((startIndex) => {
+  //       var currentIndex = TrackPlayer.getActiveTrackIndex();
+  //       console.log(startIndex + " - " + currentIndex);
+  //       if(startIndex == currentIndex){
+  //         console.log("same song");           
+  //       }
+  //       else{
+  //         console.log("different song")
+  //       }
+  //     }, 5000);
+  //     //return () => clearInterval(interval);
+  //   }
+  // });
 
   const getSongs = async () => {
     try {
@@ -130,6 +156,24 @@ export default function TabOneScreen() {
       // Capabilities that will show up when the notification is in the compact form on Android
       compactCapabilities: [Capability.Play, Capability.Pause, Capability.SkipToNext, Capability.SkipToPrevious],
     });
+
+    // useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async event => {
+    //   console.log("start");
+    //   if (event.type === Event.PlaybackActiveTrackChanged) {
+    //     console.log(event.type);
+    //     var startIndex = event.index ?? 0;
+    //     const interval = setInterval((startIndex) => {
+    //       var currentIndex = TrackPlayer.getActiveTrackIndex();
+    //       console.log(startIndex + " - " + currentIndex)
+    //       if(startIndex == currentIndex){          
+    //         console.log("same song")
+    //       }
+    //       else{
+    //         console.log("different song")
+    //       }
+    //     }, 5000);
+    //   }
+    // });
   }
 
   useEffect(() => {
@@ -254,101 +298,11 @@ export default function TabOneScreen() {
       ) : (
         <View>
           <View style={{ flex: 10 }}>
-            <ScrollView style={{ flex: 1 }}>
-              <View style={{ flex: 1, flexDirection: 'row' }}>
-                <View style={{ flex: 1, flexDirection: 'column' }}>
-                  {dropdownData != undefined ? (
-                    <MultiSelect
-                      style={styles.dropdown}
-                      data={dropdownData}
-                      placeholder='Tags...'
-                      placeholderStyle={{ color: '#a9a9a9', fontSize: 20 }}
-                      value={selectedTags}
-                      search
-                      onChange={item => {
-                        setSelectedTags(item);
-                      }}
-                      labelField="label"
-                      valueField="value"
-                      selectedTextStyle={{ color: 'white', fontSize: 20 }}
-                    />
-                  ) : (<View></View>)}
-                </View>
-                <View>
-                  <FontAwesome.Button style={styles.searchButton} name="search" backgroundColor='purple' onPress={() => Search()}></FontAwesome.Button>
-                </View>
-              </View>
-            </ScrollView>
-            <View style={{ flex: 2, flexDirection: 'column', justifyContent: 'center', alignContent: 'center', width: 'auto' }}>
-              <View style={{ flex: 4, justifyContent: 'center', alignContent: 'center' }}>
-                <Text style={styles.title}>{tracks[trackIndex].title}</Text>
-                <Text style={styles.artist}>{tracks[trackIndex].artist}</Text>
-              </View>
-              <View style={{ flex: 1, flexDirection: 'row', margin: 10}}>
-                <View style={{ flex: 1}}></View>
-                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                  <Text>{tracks.length}</Text>
-                </View>
-                <Pressable style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                  {({ pressed }) => (
-                    <Entypo
-                      name={showingUntagged ? 'star' : 'star-outlined'}
-                      size={50}
-                      color='grey'
-                      onPress={showUntagged}
-                    />
-                  )}
-                </Pressable>
-                <Pressable style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                  {({ pressed }) => (
-                    <Entypo
-                      name="shuffle"
-                      size={50}
-                      color={orderBy == OrderBy.random ? 'white' : 'grey'}
-                      onPress={toggleShuffle}
-                    />
-                  )}
-                </Pressable>
-                <Link href={{ pathname: "/tagModal", params: { id: tracks[trackIndex].id } }} style={{flex: 1, flexDirection: 'row', alignItems: 'center'}} asChild>
-                  <Pressable style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-                    {({ pressed }) => (
-                      <FontAwesome
-                        name="plus-circle"
-                        size={25}                     
-                        color={Colors[colorScheme ?? 'light'].text}
-                      />
-                    )}
-                  </Pressable>
-                </Link>
-              </View>
-            </View>
-            <View style={{ flex: 2, padding: 24 }}>
-              <FlatList
-                data={tracks}
-                keyExtractor={({ url }) => url}
-                renderItem={({ item, index }) => (
-                  <TouchableOpacity onPress={() => PlayAtIndex(index)}>
-                    <View style={index == trackIndex ? styles.playingSongBubble : styles.songBubble}>
-                      <Text style={styles.songTitle}>
-                        {item.title} - {item.artist}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
-              />
-            </View>
+            <SongSearch dropdownData={dropdownData} selectedTags={selectedTags} setSelectedTags={setSelectedTags} Search={Search} />
+            <PlayerTitle tracks={tracks} trackIndex={trackIndex} showingUntagged={showingUntagged} showUntagged={showUntagged} orderBy={orderBy} toggleShuffle={toggleShuffle}/>
+            <SongCarousel tracks={tracks} trackIndex={trackIndex} playAtIndex={PlayAtIndex}/>
           </View>
-          <View style={styles.controls}>
-            <FontAwesome.Button style={styles.directionButton} name="backward" backgroundColor="purple" onPress={() => PlayPrevious()}></FontAwesome.Button>
-            {
-              isPlaying ? (
-                <FontAwesome.Button style={styles.playButton} name="pause" backgroundColor="purple" onPress={() => Pause()}></FontAwesome.Button>
-              ) : (
-                <FontAwesome.Button style={styles.playButton} name="play" backgroundColor="purple" onPress={() => Play()}></FontAwesome.Button>
-              )
-            }
-            <FontAwesome.Button style={styles.directionButton} name="forward" backgroundColor="purple" onPress={() => PlayNext()}></FontAwesome.Button>
-          </View>
+          <PlayerControls isPlaying={isPlaying} PlayPrevious={PlayPrevious} Pause={Pause} Play={Play} PlayNext={PlayNext} />
         </View>
       )}
     </SafeAreaView>
@@ -361,77 +315,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 50,
-    fontWeight: 'bold',
-  },
-  artist: {
-    fontSize: 30,
-    fontWeight: 'thin'
-  },
-  songTitle: {
-    fontSize: 18,
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  playingSongBubble: {
-    flex: 1,
-    padding: 5,
-    margin: 5,
-    height: 35,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: 'white',
-    backgroundColor: 'light purple'
-  },
-  songBubble: {
-    flex: 1,
-    padding: 5,
-    margin: 5,
-    height: 35,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: 'purple'
-  },
-  controls: {
-    flex: 1,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignContent: 'center'
-  },
-  directionButton: {
-    width: 50,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 100
-  },
-  playButton: {
-    width: 75,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  dropdown: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    width: 300,
-    color: 'white',
-    marginBottom: 20,
-    marginRight: 10
-  },
-  searchButton: {
-    width: 50,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
+    backgroundColor: 'black'
+  }
 });
