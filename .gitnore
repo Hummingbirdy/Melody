@@ -3,5 +3,7 @@
 *.pdb
 *.vsidx
 *.cache
+*.suo
 
 **/ProjectEvaluation
+**/FileContentIndex
