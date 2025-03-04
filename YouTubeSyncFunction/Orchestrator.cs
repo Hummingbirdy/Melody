@@ -1,27 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.DurableTask;
+using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 
 namespace YouTubeSyncFunction
 {
-    public class Orchestrator
+    public class Orchestrator(IOrchestratorHelpers orchestratorHelpers)
     {
-        private readonly IOrchestratorHelpers _orchestratorHelpers;
-        public Orchestrator(IOrchestratorHelpers orchestratorHelpers)
-        {
+        private readonly IOrchestratorHelpers _orchestratorHelpers = orchestratorHelpers;
 
-            _orchestratorHelpers = orchestratorHelpers;
-
-        }
-        [FunctionName("Orchestrator")]
+        [Function("Orchestrator")]
         public async Task<List<string>> RunOrchestrator(
-            [OrchestrationTrigger] IDurableOrchestrationContext context)
+            [OrchestrationTrigger] TaskOrchestrationContext context)
         {
             var outputs = new List<string>();
 
@@ -31,35 +22,39 @@ namespace YouTubeSyncFunction
             return outputs;
         }
 
-        [FunctionName(nameof(RunSyncYouTube))]
-        public async Task<string> RunSyncYouTube([ActivityTrigger] IDurableActivityContext context, ILogger log)
+        [Function(nameof(RunSyncYouTube))]
+        public async Task<string> RunSyncYouTube([ActivityTrigger] FunctionContext context)
         {
+            ILogger log = context.GetLogger("RunSyncYouTube");
             var status = await _orchestratorHelpers.SyncYouTube(log);
             return status;
         }
 
-        [FunctionName(nameof(RunYouTubeDownloader))]
-        public async Task<string> RunYouTubeDownloader([ActivityTrigger] IDurableActivityContext context, ILogger log)
+        [Function(nameof(RunYouTubeDownloader))]
+        public async Task<string> RunYouTubeDownloader([ActivityTrigger] FunctionContext context)
         {
+            ILogger log = context.GetLogger("RunYouTubeDownloader");
             var status = await _orchestratorHelpers.YouTubeDownloader(log);
             return status;
         }
 
-        [FunctionName("Orchestrator_HttpStart")]
-        public static async Task<HttpResponseMessage> HttpStart(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
-            [DurableClient] IDurableOrchestrationClient starter,
-            ILogger log)
+        [Function("Orchestrator_HttpStart")]
+        public static async Task<HttpResponseData> HttpStart(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req,
+            [DurableClient] DurableTaskClient client,
+            FunctionContext context)
         {
+            ILogger log = context.GetLogger("Orchestrator_HttpStart");
             // Function input comes from the request content.
-            string instanceId = await starter.StartNewAsync("Orchestrator", null);
+            string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+                nameof(Orchestrator));
 
             log.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
 
-            return starter.CreateCheckStatusResponse(req, instanceId);
+            return await client.CreateCheckStatusResponseAsync(req, instanceId);
         }
 
-        [FunctionName("Orchestrator_TimerStart")]
+        [Function("Orchestrator_TimerStart")]
         public static async Task TimerStart(
             [TimerTrigger("0 0 3 * * *")] TimerInfo timerInfo,
             [DurableClient] IDurableClient starter,

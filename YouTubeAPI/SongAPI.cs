@@ -1,4 +1,8 @@
-﻿using MelodyContext.Models;
+﻿using Google.Apis.Services;
+using Google.Apis.YouTube.v3;
+using MelodyContext.Models;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +19,10 @@ namespace YouTubeAPI
             var service = YouTubeService();
             var results = service.PlaylistItems.List("contentDetails, id, snippet, status");
             results.PlaylistId = playlistId;
-            List<Song> songList = new();
+            var songResults = await results.ExecuteAsync();
+
+            results.PlaylistId = playlistId;
+            List<Song> songList = [];
             var nextPageToken = "";
 
             while (nextPageToken != null)
@@ -34,10 +41,10 @@ namespace YouTubeAPI
                     };
                     songList.Add(item);
                 });
-
                 nextPageToken = songResponse.NextPageToken;
             }
             return songList;
+
         }
     }
 }

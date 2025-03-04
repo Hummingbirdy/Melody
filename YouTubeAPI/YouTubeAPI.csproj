@@ -1,14 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Tasks.v1" Version="1.57.0.2384" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.57.0.2756" />
+    <PackageReference Include="Google.Apis.Tasks.v1" Version="1.68.0.3657" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.69.0.3680" />
   </ItemGroup>
 
   <ItemGroup>

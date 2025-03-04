@@ -4,7 +4,7 @@ namespace YouTubeAPI
 {
     public class BaseYouTubeService
     {
-        public YouTubeService YouTubeService()
+        public static YouTubeService YouTubeService()
         {
             return new YouTubeService(new BaseClientService.Initializer
             {

@@ -18,7 +18,7 @@ namespace YouTubeAPI
             results.ChannelId = channelId;
             results.MaxResults = 500;
             var playlistResult = await results.ExecuteAsync();
-            List<Playlist> playlist = new();
+            List<Playlist> playlist = [];
 
             playlistResult.Items.ToList().ForEach(p =>
             {
