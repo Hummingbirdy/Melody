@@ -1,9 +1,6 @@
 import React from 'react'
-import {View, Text, StyleSheet, Pressable} from 'react-native'
-import { Entypo } from '@expo/vector-icons';
-import { Link } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import Icon from 'react-native-vector-icons/FontAwesome6';
 import { useColorScheme } from '@/components/useColorScheme';
 
 type Track = {
@@ -28,55 +25,41 @@ type TitleProps = {
 }
 
 const OrderBy = {
-    random : "random",
-    recent : "recent",
+    random: "random",
+    recent: "recent",
     added: "added"
 
 }
-export default function PlayerTitle(props: TitleProps){
+export default function PlayerTitle(props: TitleProps) {
     const colorScheme = useColorScheme();
-    return(
-        <View style={{ flex: 2, flexDirection: 'column', justifyContent: 'center', alignContent: 'center', width: 'auto' }}>
-            <View style={{ flex: 4, justifyContent: 'center', alignContent: 'center' }}>
-            <Text style={styles.title}>{props.tracks[props.trackIndex].title}</Text>
-            <Text style={styles.artist}>{props.tracks[props.trackIndex].artist}</Text>
+    return (
+        <View style={{ flex: 4, backgroundColor: '#00010D', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', width: 'auto' }}>
+            <View style={{ flex: 5, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={styles.title}>{props.tracks[props.trackIndex].title}</Text>
+                <Text style={styles.artist}>{props.tracks[props.trackIndex].artist}</Text>
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', margin: 10}}>
-            <View style={{ flex: 1}}></View>
-            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                <Text style={{color: 'white'}}>{props.tracks.length}</Text>
-            </View>
-            <Pressable style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                {({ pressed }) => (
-                <Entypo
-                    name={props.showingUntagged ? 'star' : 'star-outlined'}
-                    size={50}
-                    color='grey'
-                    onPress={() => props.showUntagged}
-                />
-                )}
-            </Pressable>
-            <Pressable style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                {({ pressed }) => (
-                <Entypo
-                    name="shuffle"
-                    size={50}
-                    color={props.orderBy == OrderBy.random ? 'white' : 'grey'}
-                    onPress={() => props.toggleShuffle}
-                />
-                )}
-            </Pressable>
-            <Link href={{ pathname: "/tagModal", params: { id: props.tracks[props.trackIndex].id } }} style={{flex: 1, flexDirection: 'row', alignItems: 'center'}} asChild>
-                <Pressable style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-                {({ pressed }) => (
-                    <FontAwesome
-                    name="plus-circle"
-                    size={25}                     
-                    color={Colors[colorScheme ?? 'light'].text}
-                    />
-                )}
-                </Pressable>
-            </Link>
+            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: '#2D0140' }}>
+                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+                    <TouchableOpacity style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                        <Icon
+                            name="shuffle"
+                            size={20}
+                            color={props.orderBy == OrderBy.random ? 'white' : 'grey'}
+                            onPress={() => props.toggleShuffle()}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                        <Icon
+                            name='tag'
+                            size={20}
+                            color={props.showingUntagged ? 'white' : 'grey'}
+                            onPress={() => props.showUntagged()}
+                        />
+                    </TouchableOpacity>
+                </View>
+                <View style={{ flex: 3, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginHorizontal: 15 }}>
+                    <Text style={{ color: 'white' }}>{props.trackIndex + 1}/{props.tracks.length}</Text>
+                </View>
             </View>
         </View>
     )
@@ -84,13 +67,13 @@ export default function PlayerTitle(props: TitleProps){
 
 const styles = StyleSheet.create({
     title: {
-        fontSize: 50,
+        fontSize: 40,
         fontWeight: 'bold',
         color: 'white'
     },
     artist: {
-        fontSize: 30,
+        fontSize: 25,
         fontWeight: 'thin',
-        color: 'white'
+        color: 'grey'
     },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
-import {View, Text, StyleSheet } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import {View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome6';
 
 type PlayerProps = {
     isPlaying: boolean,
@@ -13,16 +13,30 @@ type PlayerProps = {
 export default function PlayerControls(props: PlayerProps){
     return(
         <View style={styles.controls}>
-            <FontAwesome.Button style={styles.directionButton} name="backward" backgroundColor="purple" onPress={() => props.PlayPrevious()}></FontAwesome.Button>
+          <View style={[styles.bubble, {marginLeft: 40, flex: 1}]}>
+            <TouchableOpacity style={styles.sideButton} onPress={() => props.PlayPrevious()}>
+              <Icon name="backward-step" size={15} color="white" />
+            </TouchableOpacity>
+          </View>
+          <View style={[{flex: 2}, styles.bubble]}>
             {
               props.isPlaying ? (
-                <FontAwesome.Button style={styles.playButton} name="pause" backgroundColor="purple" onPress={() =>props.Pause()}></FontAwesome.Button>
+                <TouchableOpacity style={styles.mainButton} onPress={() => props.Pause()}>
+                  <Icon name="pause" size={30} color="#00010D" />
+                </TouchableOpacity>
               ) : (
-                <FontAwesome.Button style={styles.playButton} name="play" backgroundColor="purple" onPress={() => props.Play()}></FontAwesome.Button>
+                <TouchableOpacity style={styles.mainButton} onPress={() => props.Play()}>
+                  <Icon name="play" size={30} color="#00010D" />
+                </TouchableOpacity>
               )
             }
-            <FontAwesome.Button style={styles.directionButton} name="forward" backgroundColor="purple" onPress={() => props.PlayNext()}></FontAwesome.Button>
           </View>
+          <View style={[styles.bubble, {marginRight: 40, flex: 1}]}>
+            <TouchableOpacity style={styles.sideButton} onPress={() => props.PlayNext()}>
+              <Icon name="forward-step" size={15} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
     )
 }
 
@@ -31,20 +45,31 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignContent: 'center'
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        backgroundColor: '#00010D'
       },
-      directionButton: {
-        width: 50,
+      bubble: {
+        justifyContent: 'center',
+        alignItems: 'center',
+       // margin: 7
+      },
+      sideButton: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        height: 100
+        backgroundColor: '#00010D',
+        width: '50%'
       },
-      playButton: {
-        width: 75,
+      mainButton: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
-      },
+        alignItems: 'center',
+        backgroundColor: '#A305A6',
+        width: '50%',
+        //height: '75%',
+        borderRadius: 75,
+        marginTop: 10,
+        marginBottom: 10
+      }
 });

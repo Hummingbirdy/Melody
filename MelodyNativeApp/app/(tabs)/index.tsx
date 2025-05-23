@@ -1,18 +1,14 @@
-import { ActivityIndicator, FlatList, StyleSheet, Button, TouchableOpacity, Pressable, ScrollView } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useEffect, useState } from 'react';
-import { FontAwesome } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
 import TrackPlayer, { AppKilledPlaybackBehavior, Capability, useTrackPlayerEvents, Event } from 'react-native-track-player';
-import { SearchBar } from '@rneui/themed';
-import { Link } from 'expo-router';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SongCarousel from '@/components/SongCarousel';
 import PlayerControls from '@/components/PlayerControls';
-import SongSearch from '@/components/SongSearch';
 import PlayerTitle from '@/components/PlayerTitle';
+import { GestureDetector, Gesture, Directions } from 'react-native-gesture-handler'
+import { runOnJS } from 'react-native-reanimated'
 
 type Song = {
   youTubeId: string,
@@ -37,20 +33,9 @@ type Track = {
   id: string
 }
 
-type DropdownData = {
-  label: string,
-  value: number
-}
-
-type Tag = {
-  tagId: number,
-  tagName: string,
-  color: string
-}
-
 const OrderBy = {
-  random : "random",
-  recent : "recent",
+  random: "random",
+  recent: "recent",
   added: "added"
 }
 
@@ -66,9 +51,6 @@ export default function TabOneScreen() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [trackIndex, setIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [dropdownData, setDropdownData] = useState<DropdownData[]>();
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const colorScheme = useColorScheme();
   const [orderBy, setOrderBy] = useState(OrderBy.recent);
   const [showingUntagged, setShowingUntagged] = useState(false);
 
@@ -92,12 +74,15 @@ export default function TabOneScreen() {
   //     //return () => clearInterval(interval);
   //   }
   // });
+  const router = useRouter();
+  const { data } = useLocalSearchParams();
 
   const getSongs = async () => {
     try {
       let URL = `https://melodyapi.azurewebsites.net/api/song?orderBy=${orderBy}`
-      if(selectedTags.length > 0){
-        URL = URL + `&tags=${selectedTags}`
+      if (data != undefined) {
+        URL = URL + `&tags=${JSON.parse(decodeURIComponent(data.toString())).join(",")}`
+        console.log(URL);
       }
       const response = await fetch(URL);
       let songJson: Song[] = await response.json();
@@ -124,19 +109,6 @@ export default function TabOneScreen() {
     } finally {
       setLoading(false);
     };
-  }
-
-  const getTags = async () => {
-    const tagResponse = await fetch('https://melodyapi.azurewebsites.net/api/tag/');
-    let tagDropdowns = new Array<DropdownData>();
-    let tagResult: Tag[] = await tagResponse.json();
-    tagResult.forEach(tag => {
-      tagDropdowns.push({
-        label: tag.tagName,
-        value: tag.tagId
-      });
-    });
-    setDropdownData(tagDropdowns);
   }
 
   const setup = async () => {
@@ -179,7 +151,7 @@ export default function TabOneScreen() {
   useEffect(() => {
     setup();
     getSongs();
-    getTags();
+    console.warn('test');
   }, [orderBy]);
 
   const Play = async () => {
@@ -213,6 +185,7 @@ export default function TabOneScreen() {
   }
 
   const PlayAtIndex = async (index: number) => {
+    console.log('test');
     await TrackPlayer.skip(index);
     let trackIndex = await TrackPlayer.getActiveTrackIndex();
     if (trackIndex != undefined) {
@@ -220,49 +193,22 @@ export default function TabOneScreen() {
     }
   }
 
-  const Search = async () => {
-    console.log(selectedTags);
-    try {
-      const response = await fetch(`https://melodyapi.azurewebsites.net/api/song?orderBy=${orderBy}&tags=${selectedTags}`);
-      let songJson: Song[] = await response.json();
-      let trackList = new Array<Track>();
-      songJson.forEach(song => {
-        trackList.push({
-          url: 'https://melodymusic.blob.core.windows.net/mp4storage/' + song.youTubeId + '.mp3',
-          title: song.songName,
-          artist: song.artist,
-          album: "",
-          genre: "",
-          date: "",
-          artwork: require('../../assets/images/icon.png'),
-          duration: 10,
-          id: song.youTubeId
-        });
-      });
-      setTracks(trackList);
-      // setSongs(songJson);
-      await TrackPlayer.setQueue(trackList);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   const toggleShuffle = async () => {
-    if(orderBy == OrderBy.random){
+    if (orderBy == OrderBy.random) {
       setOrderBy(OrderBy.recent);
     }
-    else{
+    else {
       setOrderBy(OrderBy.random);
     }
   }
 
   const showUntagged = async () => {
     try {
-      if (showingUntagged){
+      if (showingUntagged) {
         getSongs;
         setShowingUntagged(false);
       }
-      else{
+      else {
         const response = await fetch(`https://melodyapi.azurewebsites.net/api/song/getUnsorted`);
         let songJson: Song[] = await response.json();
         let trackList = new Array<Track>();
@@ -284,11 +230,16 @@ export default function TabOneScreen() {
         await TrackPlayer.setQueue(trackList);
         setShowingUntagged(true);
       }
-      
+
     } catch (error) {
       console.error(error);
     }
   }
+  const swipeGesture = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd((event) => {
+      runOnJS(router.navigate)('/advancedSearchModal');
+    });
 
   return (
 
@@ -298,15 +249,15 @@ export default function TabOneScreen() {
       ) : (
         <View>
           <View style={{ flex: 10 }}>
-            <SongSearch dropdownData={dropdownData} selectedTags={selectedTags} setSelectedTags={setSelectedTags} Search={Search} />
-            <PlayerTitle tracks={tracks} trackIndex={trackIndex} showingUntagged={showingUntagged} showUntagged={showUntagged} orderBy={orderBy} toggleShuffle={toggleShuffle}/>
-            <SongCarousel tracks={tracks} trackIndex={trackIndex} playAtIndex={PlayAtIndex}/>
+            <GestureDetector gesture={swipeGesture}>
+              <PlayerTitle tracks={tracks} trackIndex={trackIndex} showingUntagged={showingUntagged} showUntagged={showUntagged} orderBy={orderBy} toggleShuffle={toggleShuffle} />            
+            </GestureDetector>       
+            <SongCarousel tracks={tracks} trackIndex={trackIndex} playAtIndex={PlayAtIndex} />
           </View>
           <PlayerControls isPlaying={isPlaying} PlayPrevious={PlayPrevious} Pause={Pause} Play={Play} PlayNext={PlayNext} />
         </View>
       )}
     </SafeAreaView>
-
   );
 }
 
