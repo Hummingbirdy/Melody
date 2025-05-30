@@ -1,13 +1,14 @@
+import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import { Platform, Keyboard, TouchableWithoutFeedback, Button, TextInput, Text, View, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { Dropdown } from 'react-native-element-dropdown';
-import { Input, Button } from '@rneui/themed';
-import { Divider } from '@rneui/themed';
-
-//import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { GestureDetector, Gesture, Directions } from 'react-native-gesture-handler'
+import { runOnJS } from 'react-native-reanimated'
 import { useEffect, useState } from 'react';
+import MelodyStyles, { Colors } from '../assets/styles/MelodyStyles';
+import { Entypo } from '@expo/vector-icons'; // or 'react-native-vector-icons/FontAwesome'
+
 
 
 type Song = {
@@ -24,7 +25,8 @@ type Song = {
 type Tag = {
   tagId: number,
   tagName: string,
-  color: string
+  color: string,
+  favoriteOrder: number | null
 }
 
 type DropdownData = {
@@ -37,233 +39,223 @@ type Mapping = {
   songId: string | undefined
 }
 export default function AddTag() {
-    const {id} = useLocalSearchParams<{id: string}>();
-    const [isLoading, setLoading] = useState(true);
-    const [song, setSong] = useState<Song>();
-    const [tagList, setTagList] = useState<Tag[]>();
-    const [dropdownData, setDropdownData] = useState<DropdownData[]>();
-    const [selectedTag, setSelectedTag] = useState<DropdownData>();
-    const [newTag, setNewTag] = useState<Tag>();
-    console.log('YoutubeId: ' + id);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [song, setSong] = useState<Song>();
+  const [tagList, setTagList] = useState<Tag[]>();
+  const [newTag, setNewTag] = useState<Tag>();
+  const [open, setOpen] = useState(false);
+  const [values, setValue] = useState<string[]>([]);
+  const [items, setItems] = useState([
+    { label: '', value: '' },
+  ]);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-    useEffect(() =>{
-      getData();
-    }, []);
+  useEffect(() => {
+    getData();
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
-    const getData = async () => {
-      const songResponse = await fetch('https://melodyapi.azurewebsites.net/api/song/'+ id);
-      let songResult: Song = await songResponse.json();
-      setSong(songResult);
-      const tagResponse = await fetch('https://melodyapi.azurewebsites.net/api/tag/');
-      let tagDropdowns = new Array<DropdownData>();
-      let tagResult: Tag[] = await tagResponse.json();
-      tagResult.forEach(tag => {
-        tagDropdowns.push({
-          label: tag.tagName,
-          value: tag.tagId.toString()
-        })
-      });
-      setDropdownData(tagDropdowns);
-      setTagList(tagResult);
-      setLoading(false);
-    }
-
-    const tagBubble = (tagId:number) =>{
-      var tag = tagList?.find(t => t.tagId == tagId) || {tagId: 0, tagName: "", color: ""};
-      return(
-        <View style={styles.tagBubble} key={tag.tagId}>
-          <Text>{tag.tagName}</Text>
-        </View>
-      )
-    }
-
-    const tagInput = (name:string) => {
-      let x : Tag = {
-        tagId: 0,
-        tagName: name,
-        color: '00000'
-      }
-      setNewTag(x);
-    }
-
-    const saveNewTag = () => {
-      fetch('https://melodyapi.azurewebsites.net/api/tag/', {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newTag),
+  const getData = async () => {
+    const songResponse = await fetch('https://melodyapi.azurewebsites.net/api/song/' + id);
+    let songResult: Song = await songResponse.json();
+    setSong(songResult);
+    const tagResponse = await fetch('https://melodyapi.azurewebsites.net/api/tag/');
+    let tagDropdowns = new Array<DropdownData>();
+    let tagResult: Tag[] = await tagResponse.json();
+    tagResult.forEach(tag => {
+      tagDropdowns.push({
+        label: tag.tagName,
+        value: tag.tagId.toString()
       })
+    });
+    // setDropdownData(tagDropdowns);
+    setTagList(tagResult);
+    // setLoading(false);
+    setItems(tagDropdowns);
+  }
+
+  const tagBubble = (tagId: number) => {
+    var tag = tagList?.find(t => t.tagId == tagId) || { tagId: 0, tagName: "", color: "" };
+    return (
+      <View style={MelodyStyles.tagBubble} key={tag.tagId}>
+        <Text style={MelodyStyles.tagText}>{tag.tagName}</Text>
+      </View>
+    )
+  }
+
+  const tagInput = (name: string) => {
+    let x: Tag = {
+      tagId: 0,
+      tagName: name,
+      color: '00000',
+      favoriteOrder: null
+    }
+    setNewTag(x);
+  }
+
+  const saveNewTag = () => {
+    fetch('https://melodyapi.azurewebsites.net/api/tag/', {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newTag),
+    })
       .then((response) => response.json())
       .then((responseData: Tag) => {
         console.log(JSON.stringify(responseData));
-        const newMapping:Mapping = {
+        const newMapping: Mapping = {
           tagId: responseData.tagId,
           songId: song?.youTubeId,
         }
         fetch('https://melodyapi.azurewebsites.net/api/tagSongMapping/', {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMapping),
-        }).then(() => {
-          console.log('saved');
-          setNewTag(undefined);
-          setLoading(true);
-          getData();
-        });
-      })
-      
-    }
-
-    const saveTag = () => {
-      console.log('savingTag')
-      if(selectedTag != undefined){
-        const newMapping:Mapping = {
-          tagId: parseInt(selectedTag.value),
-          songId: song?.youTubeId
-        }
-        console.log(newMapping);
-        fetch('https://melodyapi.azurewebsites.net/api/tagSongMapping', {
           method: "POST",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
           body: JSON.stringify(newMapping),
-        }).then((response) => console.log(response)).then(() => {
+        }).then(() => {
           console.log('saved');
-          setSelectedTag(undefined);
-          setLoading(true);
+          setNewTag(undefined);
           getData();
         });
-      }
-      else{
-        console.log('undefined')
-      }
+      })
+
+  }
+
+  const saveTag = () => {
+    console.log('savingTag')
+    if (values.length > 0) {
+      const newMappings: Mapping[] = [];
+      values.map((value) => {
+        const newMapping: Mapping = {
+          tagId: parseInt(value),
+          songId: song?.youTubeId
+        }
+        newMappings.push(newMapping);
+      });
+      fetch('https://melodyapi.azurewebsites.net/api/tagSongMapping/CreateBatch', {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMappings),
+      }).then((response) => console.log(response)).then(() => {
+        console.log('saved');
+        // setSelectedTag(undefined);
+        // setLoading(true);
+        getData();
+      });
     }
+    else {
+      console.log('undefined')
+    }
+  }
+
+  const swipeGesture = Gesture.Fling()
+    .direction(Directions.RIGHT)
+    .onEnd((event) => {
+      runOnJS(router.navigate)('/');
+    });
+
+  const dismissDropdown = () => {
+    if (open) {
+      setOpen(false);
+    }
+    Keyboard.dismiss();
+  };
 
   return (
-    <View style={styles.container}>     
-      {isLoading ? (
-        <ActivityIndicator />
-      ) : (
-        <View style={{display: 'flex'}}>
-          <View style={{display: 'flex', flex: 4, flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-            <Text style={styles.title}>{song?.songName}</Text>
-            <View style={{display: 'flex', flexDirection: 'row'}}>
-              {song?.tags.map(tag => tagBubble(tag))}
+    <GestureDetector gesture={swipeGesture}>
+      <TouchableWithoutFeedback onPress={dismissDropdown}>
+        <View style={[MelodyStyles.container, { padding: 25 }]}>
+          <View style={MelodyStyles.flexOne}>
+            {!keyboardVisible && (
+              <View style={[MelodyStyles.centeredColumn, MelodyStyles.flexTwo]}>
+                <Text style={MelodyStyles.title}>{song?.songName}</Text>
+                <View style={MelodyStyles.row}>
+                  {song?.tags.map(tag => tagBubble(tag))}
+                </View>
+              </View>)}
+            <View style={[MelodyStyles.tagInputRow, { zIndex: 1 }]}>
+              <TextInput
+                placeholder='Create New Tag'
+                value={newTag?.tagName}
+                onChangeText={value => tagInput(value)}
+                placeholderTextColor='grey'
+                underlineColorAndroid='transparent'
+                style={MelodyStyles.tagInput}
+              />
+              <View style={MelodyStyles.tagSelectButtonRow}>
+                <Button title="Create" color={Colors.pink} onPress={saveNewTag} />
+              </View>
+            </View>
+            <View style={[MelodyStyles.tagInputRow, { zIndex: 2 }]}>
+              <DropDownPicker
+                open={open}
+                value={values}
+                items={items}
+                // renderListItem={props => {
+                //   const fullItem = tagList?.find(t => t.tagId == props.item.value);
+                //   return (
+                //     <TouchableOpacity activeOpacity={0.5} onPress={() => props.onPress(props.item.value!)}>
+                //       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 15 }}>
+                //         <Text style={{ color: 'white', fontSize: 16 }}>{props.item.label}</Text>
+                //         {fullItem?.favoriteOrder != null && (
+                //           <Entypo name="star-outlined" size={16} color={Colors.pink} style={{ marginLeft: 10 }} />
+                //         )}
+                //       </View>
+                //     </TouchableOpacity>
+                //   )
+                // }}
+                setOpen={setOpen}
+                setValue={setValue}
+                setItems={setItems}
+                multiple={true}
+                listMode='MODAL'
+                mode="BADGE"
+                searchable={true}
+                placeholder="Select Tags"
+                placeholderStyle={{ color: 'grey' }}
+                searchPlaceholder='Search for tags'
+                style={MelodyStyles.tagDropdown}
+                dropDownContainerStyle={MelodyStyles.tagDropdownContainer}
+                modalContentContainerStyle={MelodyStyles.tagModalContainer}
+                textStyle={MelodyStyles.colorWhite}
+                listItemLabelStyle={MelodyStyles.colorWhite}
+                badgeTextStyle={{ color: Colors.background }}
+                closeOnBackPressed={true}
+                searchTextInputStyle={MelodyStyles.tagSearchText}
+                zIndex={5000}
+                zIndexInverse={7000}
+
+              />
+              <View style={MelodyStyles.tagSelectButtonRow}>
+                <Button title="Add" color={Colors.pink} onPress={saveTag} />
+              </View>
+
             </View>
           </View>
-          <View style={styles.inputRow}>
-          {dropdownData != undefined ? (
-            <Dropdown
-              style={styles.dropdown}
-              data={dropdownData}
-              placeholder='Add Existing Tag'
-              placeholderStyle={{color: '#a9a9a9', fontSize: 20}}
-              value={selectedTag}
-              onChange={item => {
-                setSelectedTag(item);
-              }}
-              labelField="label"
-              valueField="value"
-              selectedTextStyle={{color: 'white', fontSize: 20}}
-            />
-          ) : (<View></View>)}
-          <Button
-            title='Save'
-            onPress={() => saveTag()}
-            color='secondary'
-            buttonStyle={styles.button}
-          />
-          </View>
-          <View style={styles.inputRow}>
-            <Input
-              placeholder='Create New Tag'
-              value={newTag?.tagName}
-              onChangeText={value => tagInput(value)} 
-              inputContainerStyle={styles.input}  
-              inputStyle={{fontSize: 20, color: 'white'}}   
-              placeholderTextColor='#a9a9a9'             
-              underlineColorAndroid='transparent'
-            />
-            <Button
-              title='Save'
-              onPress={() => saveNewTag()}
-              color='secondary'
-              buttonStyle={styles.button}
-            />
-        </View>
-        </View>
-      )}
 
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
-    </View>
+          {/* Use a light status bar on iOS to account for the black space above the modal */}
+          <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
+        </View>
+      </TouchableWithoutFeedback>
+    </GestureDetector>
   );
+
+
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-    borderColor: 'white',
-    backgroundColor: 'white',
-    color: 'white'
-  },
-  dropdown: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    width: 300,
-    color: 'white',
-    marginBottom: 20,
-    marginRight: 10
-  },
-  input: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    width: 300,
-    color: 'white'
-  },
-  tagBubble: {
-    height: 30,
-    backgroundColor: 'purple',
-    margin: 5,
-    padding: 5
-  },
-  inputRow: {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    backgroundColor: '#222222',
-    borderRadius: 5,
-    margin: 10,
-    padding: 10
-  }, 
-  button : {
-    width: '18%', 
-    borderRadius: 7
-  }
-});

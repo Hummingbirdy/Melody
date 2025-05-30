@@ -1,5 +1,4 @@
-import { ActivityIndicator, StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import TrackPlayer, { AppKilledPlaybackBehavior, Capability, useTrackPlayerEvents, Event } from 'react-native-track-player';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -9,6 +8,7 @@ import PlayerControls from '@/components/PlayerControls';
 import PlayerTitle from '@/components/PlayerTitle';
 import { GestureDetector, Gesture, Directions } from 'react-native-gesture-handler'
 import { runOnJS } from 'react-native-reanimated'
+import MelodyStyles, { Colors } from '../../assets/styles/MelodyStyles';
 
 type Song = {
   youTubeId: string,
@@ -243,12 +243,12 @@ export default function TabOneScreen() {
 
   return (
 
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={MelodyStyles.rootContainer}>
       {isLoading ? (
         <ActivityIndicator />
       ) : (
         <View>
-          <View style={{ flex: 10 }}>
+          <View style={MelodyStyles.flexTen}>
             <GestureDetector gesture={swipeGesture}>
               <PlayerTitle tracks={tracks} trackIndex={trackIndex} showingUntagged={showingUntagged} showUntagged={showUntagged} orderBy={orderBy} toggleShuffle={toggleShuffle} />            
             </GestureDetector>       
@@ -269,3 +269,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'black'
   }
 });
+
+

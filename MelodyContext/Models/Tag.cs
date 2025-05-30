@@ -11,5 +11,6 @@ namespace MelodyContext.Models
         public int TagId { get; set; }
         public string? TagName { get; set; }
         public string? Color { get; set;}
+        public int? FavoriteOrder { get; set; }
     }
 }

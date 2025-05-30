@@ -19,7 +19,8 @@ namespace MelodyAPI.Controllers
         [HttpGet]
         public List<Tag> Get()
         {
-            return _context.Tags.ToList();
+            var tags =  _context.Tags.OrderBy(t => t.FavoriteOrder == null).ThenBy(t => t.FavoriteOrder).ThenBy(t => t.TagName).ToList();
+            return tags;
         }
 
         // GET api/<TagController>/5
