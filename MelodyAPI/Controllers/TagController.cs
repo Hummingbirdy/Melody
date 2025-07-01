@@ -8,18 +8,15 @@ namespace MelodyAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TagController : ControllerBase
+    public class TagController(MelodyDbContext context) : ControllerBase
     {
-        private readonly MelodyDbContext _context;
-        public TagController(MelodyDbContext context)
-        {
-            _context = context;
-        }
+        private readonly MelodyDbContext _context = context;
+
         // GET: api/<TagController>
         [HttpGet]
         public List<Tag> Get()
         {
-            var tags =  _context.Tags.OrderBy(t => t.FavoriteOrder == null).ThenBy(t => t.FavoriteOrder).ThenBy(t => t.TagName).ToList();
+            var tags =  _context.Tags.OrderBy(t => t.IsAIGenerated).ThenBy(t => t.FavoriteOrder == null).ThenBy(t => t.FavoriteOrder).ThenBy(t => t.TagName).ToList();
             return tags;
         }
 

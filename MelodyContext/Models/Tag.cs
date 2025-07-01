@@ -12,5 +12,6 @@ namespace MelodyContext.Models
         public string? TagName { get; set; }
         public string? Color { get; set;}
         public int? FavoriteOrder { get; set; }
+        public bool IsAIGenerated { get; set; }
     }
 }

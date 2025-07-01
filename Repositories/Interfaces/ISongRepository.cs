@@ -10,8 +10,11 @@ namespace Repositories.Interfaces
     public interface ISongRepository
     {
         List<Song> GetAll();
+        List<Song> GetAllNoTracking();
         void UpdateAzureFlag(string youTubeId);
         void FlagFailure(string youTubeId);
         Task<string> UpdateSongs(List<Song> songs);
+        void AddSongsFromSpotify(List<Song> song);
+        void AddSongFromSpotity(Song song);
     }
 }

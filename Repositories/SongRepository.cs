@@ -1,6 +1,8 @@
 ﻿using MelodyContext;
 using MelodyContext.Models;
+using Microsoft.IdentityModel.Tokens;
 using Repositories.Interfaces;
+using System.Data.Entity;
 
 namespace Repositories
 {
@@ -25,6 +27,11 @@ namespace Repositories
         public List<Song> GetAll()
         {
             return _context.Songs.ToList();
+        }
+
+        public List<Song> GetAllNoTracking()
+        {
+            return _context.Songs.AsNoTracking().ToList();
         }
 
         public void UpdateAzureFlag(string youTubeId)
@@ -58,6 +65,26 @@ namespace Repositories
             {
                 return ex.Message;
             }
+        }
+        public void AddSongsFromSpotify(List<Song> song)
+        {
+            var existingIds = _context.Songs
+                .Select(s => s.YouTubeId)
+                .ToHashSet();
+            var newSongs = song
+                .Where(s => !existingIds.Contains(s.YouTubeId))
+                .ToList();
+            if (newSongs.Count > 0)
+            {
+                _context.Songs.AddRange(newSongs);
+                _context.SaveChanges();
+            }
+        }
+
+        public void AddSongFromSpotity(Song song)
+        {
+                _context.Songs.Add(song);
+                _context.SaveChanges();
         }
     }
 }

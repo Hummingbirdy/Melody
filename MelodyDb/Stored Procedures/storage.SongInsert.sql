@@ -1,20 +1,22 @@
 ﻿create procedure storage.SongInsert
-	@song as storage.SongTableType readonly
+	@song as storage.SongTableType readonly,
+	@spotify as bit = 0
 as
 	insert Song (
 		YouTubeId,
 		SongName,
 		Artist,
 		CreatedDate,
-		YouTubeAddedDate
-
+		YouTubeAddedDate,
+		FromSpotify
 	)
 	select 
 		YouTubeId,
 		SongName,
 		Artist,
 		getdate(),
-		YouTubeAddedDate
+		YouTubeAddedDate,
+		@spotify
 	from @song src
 	where
 		not exists (select * from Song tgt 

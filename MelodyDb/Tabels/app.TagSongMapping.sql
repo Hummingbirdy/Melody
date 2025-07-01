@@ -1,9 +1,10 @@
 ﻿create table app.TagSongMapping
 (
-	MappingId	int				not null	identity(1,1),
-	TagId		int				not null,
-	SongId		varchar(150)	not null,
-	CreatedDate	datetime		not null
+	MappingId		int				not null	identity(1,1),
+	TagId			int				not null,
+	SongId			varchar(150)	not null,
+	CreatedDate		datetime		not null,
+	IsAIGenerated	bit				not null	default 0
 )
 go 
 alter table app.TagSongMapping add constraint PK_TagSongMapping primary key clustered (MappingId);

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MelodyContext.Models
 {
@@ -17,6 +12,8 @@ namespace MelodyContext.Models
         public bool IsValid { get; set; }
         public bool InAzure { get; set; }
         public bool UploadFailed { get; set; }
+        public bool HasRanThroughTagAIGeneration { get; set; }
+        public bool FromSpotify { get; set; }
         [NotMapped]
         public int[]? Tags { get; set; }
     }

@@ -12,6 +12,7 @@ namespace MelodyContext.Models
         public int TagId { get; set; }
         public string SongId { get; set; }  
         public DateTime CreatedDate { get; set; }
+        public bool IsAIGenerated { get; set; }
         public virtual Tag Tag { get; set; }
         public virtual Song Song { get; set; }
     }
